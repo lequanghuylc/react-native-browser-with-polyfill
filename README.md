@@ -22,6 +22,21 @@ npm install react-native-browser-with-polyfill
 npm install github:lequanghuylc/react-native-browser-with-polyfill
 ```
 
+### Using in Expo Snack
+
+In Expo Snack, you don't run `npm install`. Instead, edit `package.json` directly and add the dependency:
+
+```json
+{
+  "dependencies": {
+    "react-native-webview": "^13.0.0",
+    "react-native-browser-with-polyfill": "github:lequanghuylc/react-native-browser-with-polyfill"
+  }
+}
+```
+
+Expo Snack will automatically install the package from GitHub when you save.
+
 ## Quick Start
 
 ### Basic Usage (without polyfills)
