@@ -2,13 +2,20 @@
   "name": "react-native-browser-with-polyfill",
   "version": "1.0.0",
   "description": "Polyfill-injecting WebView browser for React Native / Expo. Uses dependency injection to avoid SDK version conflicts.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lequanghuylc/react-native-browser-with-polyfill.git"
   },
   "author": "Huy Le",
-  "keywords": ["react-native", "expo", "webview", "polyfill", "browser", "ipados"],
+  "keywords": [
+    "react-native",
+    "expo",
+    "webview",
+    "polyfill",
+    "browser",
+    "ipados"
+  ],
   "license": "MIT",
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -16,7 +23,14 @@
     "react-native-webview": ">=11.0.0"
   },
   "files": [
-    "index.js",
-    "src/"
-  ]
+    "dist/",
+    "build.js"
+  ],
+  "scripts": {
+    "build": "node build.js",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
 }
