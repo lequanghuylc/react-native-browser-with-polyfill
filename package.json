@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lequanghuylc/react-native-browser-with-polyfill.git"
+    "url": "git+https://github.com/lequanghuylc/react-native-browser-with-polyfill.git"
   },
   "author": "Huy Le",
   "keywords": ["react-native", "expo", "webview", "polyfill", "browser", "ipados"],
