@@ -1,6 +1,6 @@
 {
   "name": "react-native-browser-with-polyfill",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Polyfill-injecting WebView browser for React Native / Expo. Uses dependency injection to avoid SDK version conflicts.",
   "main": "dist/index.js",
   "repository": {
