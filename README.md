@@ -1,26 +1,38 @@
-# expo-browser
+# react-native-browser-with-polyfill
 
-A dependency-injected WebView browser for React Native / Expo that injects Safari 15 polyfills and a floating keyboard dev toolbar.
+A polyfill-injecting WebView browser component for React Native and Expo, built with a dependency injection pattern so it works across any SDK version.
 
-Works with **Expo Go**, **Expo Snack**, and any React Native version — no native linking required.
+## Why Dependency Injection?
 
-## Why DI?
+Expo SDK versions change frequently, and native module import paths shift between versions. Hardcoding imports of `react-native`, `react`, or `react-native-webview` causes build failures when your SDK version doesn't match.
 
-Expo SDK versions change frequently and break native module imports. By accepting `React`, `ReactNative`, and `Webview` as parameters, this library works with **any** SDK version without version conflicts.
+This library sidesteps the problem entirely: instead of importing modules internally, `createBrowser()` accepts `React`, `ReactNative`, and `Webview` as parameters. The same package works with Expo SDK 45, SDK 50, or any version in between.
 
 ## Install
 
+Choose one of these two methods:
+
 ```bash
-npm install expo-browser react-native-webview
+# Install from npm
+npm install react-native-browser-with-polyfill
+```
+
+```bash
+# Install directly from GitHub (unpublished / bleeding-edge)
+npm install github:lequanghuylc/react-native-browser-with-polyfill
 ```
 
 ## Quick Start
 
+### Basic Usage (without polyfills)
+
+Copy-paste ready for [Expo Snack](https://snack.expo.dev/):
+
 ```jsx
-import createBrowser from "expo-browser";
-import Webview from "react-native-webview";
-import * as React from "react";
-import * as ReactNative from "react-native";
+import createBrowser from 'react-native-browser-with-polyfill';
+import Webview from 'react-native-webview';
+import * as React from 'react';
+import * as ReactNative from 'react-native';
 
 const { Browser } = createBrowser({ Webview, React, ReactNative });
 
@@ -29,15 +41,15 @@ export default function App() {
 }
 ```
 
-## With Polyfills
+### With Polyfills (iPadOS 15 + Dev Keyboard Bar)
 
 ```jsx
-import createBrowser from "expo-browser";
-import Webview from "react-native-webview";
-import * as React from "react";
-import * as ReactNative from "react-native";
-import polyfillScript from "expo-browser/src/polyfills/ipados15-polyfill";
-import keyboardScript from "expo-browser/src/polyfills/dev-keyboard-bar";
+import createBrowser from 'react-native-browser-with-polyfill';
+import Webview from 'react-native-webview';
+import * as React from 'react';
+import * as ReactNative from 'react-native';
+import polyfillScript from 'react-native-browser-with-polyfill/src/polyfills/ipados15-polyfill';
+import keyboardScript from 'react-native-browser-with-polyfill/src/polyfills/dev-keyboard-bar';
 
 const { Browser } = createBrowser({ Webview, React, ReactNative });
 
@@ -56,50 +68,77 @@ export default function App() {
 
 ### `createBrowser({ Webview, React, ReactNative })`
 
-Returns:
+Creates a browser instance with dependency-injected modules.
 
-| Export | Description |
-|--------|-------------|
-| `Browser` | Main component (WebView + DevBar) |
-| `WebViewScreen` | Just the WebView with polyfill injection |
-| `DevBar` | Just the floating toolbar |
-| `useWebViewConsole` | Hook for console message capture |
+**Parameters:**
 
-### `<Browser />` Props
+| Param        | Type         | Description                         |
+| ------------ | ------------ | ----------------------------------- |
+| `Webview`    | Component    | `react-native-webview` WebView      |
+| `React`      | Module       | `react` (use `import * as React`)   |
+| `ReactNative`| Module       | `react-native` (use `import * as ReactNative`) |
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `initialUrl` | string | `browserleaks.com/js` | Starting URL |
-| `polyfillScript` | string | — | JS polyfill code to inject before page load |
-| `keyboardScript` | string | — | Keyboard toolbar code to inject |
+**Returns:**
 
-### `useWebViewConsole()`
+```ts
+{
+  Browser,           // Main screen component
+  WebViewScreen,     // Standalone WebView screen
+  DevBar,            // Developer console bar
+  useWebViewConsole  // Hook for the console log viewer
+}
+```
 
-Returns `{ logs, addLog, clearLogs, handleWebViewMessage }` — use with `onMessage` prop.
+### `Browser` Props
+
+| Prop             | Type     | Default | Description                               |
+| ---------------- | -------- | ------- | ----------------------------------------- |
+| `initialUrl`     | string   | `"about:blank"` | URL to load on first render         |
+| `polyfillScript` | string   | `null`  | JavaScript to inject into every page (e.g. ipados15 polyfill) |
+| `keyboardScript` | string   | `null`  | JavaScript to inject for the floating dev keyboard bar |
+
+### `useWebViewConsole()` Hook
+
+Returns an object you can use to read and display the WebView's console output:
+
+```ts
+{
+  logs: Array<{ time: string; type: string; content: string }>,
+  addLog: (log: { type: string; content: string }) => void,
+  clearLogs: () => void,
+  handleWebViewMessage: (event: any) => void
+}
+```
 
 ## Included Polyfills
 
-**ipados15-polyfill.js** (65KB) — Safari 15.x polyfill suite:
-- globalThis, Object.hasOwn, Array.at, findLast/findLastIndex
-- structuredClone, Promise.withResolvers, crypto.randomUUID
-- URL.canParse, AbortSignal.timeout, AggregateError
-- CSS: :has(), @container, oklch/oklab, color-mix, nesting, viewport units
+### `src/polyfills/ipados15-polyfill.js`
 
-**dev-keyboard-bar.js** (23KB) — Floating keyboard toolbar:
-- Esc, Ctrl, Alt, Tab, arrow keys, F1-F12
-- Useful on iPad where physical keyboard shortcuts don't work in WebView
+Safari 15 / iPadOS 15 compatibility polyfills:
+- `Promise.withResolvers` polyfill
+- `DOMParser` polyfill
+- `AbortController` / `AbortSignal` polyfill
+- `URLPattern` polyfill
+
+### `src/polyfills/dev-keyboard-bar.js`
+
+Injects a floating toolbar at the bottom of the WebView that toggles a full-screen developer console overlay. Capture logs from the WebView and display them for debugging.
 
 ## Architecture
 
 ```
-expo-browser/
-  index.js                — entry point (re-exports createBrowser)
-  src/
-    createBrowser.jsx     — factory: Browser, WebViewScreen, DevBar, hook
-    polyfills/
-      ipados15-polyfill.js  — Safari 15 JS+CSS polyfill suite
-      dev-keyboard-bar.js   — floating keyboard toolbar
+react-native-browser-with-polyfill/
+├── index.js                    # Single entry point — exports createBrowser
+├── package.json
+├── README.md
+└── src/
+    ├── createBrowser.jsx       # DI factory — accepts React, ReactNative, Webview
+    └── polyfills/
+        ├── ipados15-polyfill.js   # Safari 15 compatibility shims
+        └── dev-keyboard-bar.js    # Floating dev toolbar
 ```
+
+The library is intentionally minimal — a single entry point, no bundler required. It works with Expo, bare React Native, or any React Native CLI project.
 
 ## License
 
